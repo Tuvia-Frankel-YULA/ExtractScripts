@@ -34,7 +34,6 @@ def check_update() -> bool:
             window.update()
             window.quit()
             window.destroy()
-            time.sleep(1)
 
             return remote_version > version
 
@@ -60,4 +59,3 @@ def download_update():
     window.update()
     window.quit()
     window.destroy()
-    time.sleep(1)

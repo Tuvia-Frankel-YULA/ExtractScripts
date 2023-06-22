@@ -8,5 +8,5 @@ if __name__ == '__main__':
         updates.download_update()
         importlib.reload(gui)
 
-    gui.show_gui()
+gui.show_gui()
 
