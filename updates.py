@@ -54,7 +54,7 @@ def download_update():
 
     os.remove(os.path.join(script_directory, 'main.zip'))
 
-    shutil.copytree(os.path.join(script_directory, 'ExtractScripts-main'), script_directory)
+    shutil.copytree(os.path.join(script_directory, 'ExtractScripts-main'), script_directory, dirs_exist_ok=True)
     os.remove(os.path.join(script_directory, 'ExtractScripts-main'))
 
     window.update()
