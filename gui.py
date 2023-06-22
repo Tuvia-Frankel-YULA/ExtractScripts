@@ -7,6 +7,7 @@ from typing import Any, Tuple
 import tkinter.messagebox
 
 import student_names
+import updates
 
 scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
     ("Student names", student_names.run_tasks)

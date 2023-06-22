@@ -1,6 +1,9 @@
 import gui
-import student_names
+import updates
 
 if __name__ == '__main__':
-    gui.show_gui()
+    if updates.check_update():
+        updates.download_update()
+    else:
+        gui.show_gui()
 
