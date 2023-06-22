@@ -1,8 +1,11 @@
 import os
+import shutil
 import sys
 import time
 import tkinter
 import urllib.request
+
+import dload
 
 version_file_url = 'https://raw.githubusercontent.com/Tuvia-Frankel-YULA/ExtractScripts/main/version.txt'
 update_zip_url = 'https://github.com/Tuvia-Frankel-YULA/ExtractScripts/archive/refs/heads/main.zip'
@@ -45,7 +48,14 @@ def download_update():
     window.update()
     time.sleep(1)
 
+    script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 
+    dload.save_unzip(update_zip_url, script_directory)
+
+    os.remove(os.path.join(script_directory, 'main.zip'))
+
+    shutil.copytree(os.path.join(script_directory, 'ExtractScripts-main'), script_directory)
+    os.remove(os.path.join(script_directory, 'ExtractScripts-main'))
 
     window.update()
     window.quit()
