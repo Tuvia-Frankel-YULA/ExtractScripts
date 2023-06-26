@@ -19,6 +19,7 @@ out_default_folder = os.path.join(script_directory, 'out')
 
 global is_boys_school
 global is_girls_school
+global freshman_year
 
 global file_in_text
 global folder_out_text
@@ -36,6 +37,8 @@ def show_gui():
     window = tkinter.Tk()
     window.title('Yula Scripts')
     window.geometry('900x500')
+
+    tkinter.Label(window, text="Config: ").grid(sticky='WE')
 
     school_layout = tkinter.Frame(window)
     school_layout.grid(sticky='WE')
@@ -56,6 +59,22 @@ def show_gui():
 
     is_girls_check = tkinter.Checkbutton(school_layout, text="Girls", variable=is_girls_school, command=set_is_girls)
     is_girls_check.grid(row=0, column=2)
+
+    year_layout = tkinter.Frame(window)
+    year_layout.grid(sticky='WE')
+
+    year_label = tkinter.Label(year_layout, text="Year freshmen graduate: ")
+    year_label.grid(row=0, column=0)
+
+    global freshman_year
+    freshman_year = tkinter.StringVar()
+    freshman_year.set(str(config_data.year))
+    year_field = tkinter.Spinbox(year_layout, from_=0, to=10000, increment=1, textvariable=freshman_year, command=set_freshman_year)
+    year_field.grid(row=0, column=1, sticky='WE')
+
+    year_layout.columnconfigure(1, weight=1)
+
+    tkinter.Label(window, text="Files: ").grid(sticky='WE')
 
     global file_in_text
     file_in_text = tkinter.StringVar()
@@ -93,7 +112,7 @@ def show_gui():
     btn.grid(sticky='WE')
 
     window.columnconfigure('all', weight=1)
-    window.rowconfigure(3, weight=1)
+    window.rowconfigure(7, weight=1)
     window.mainloop()
 
 
@@ -124,6 +143,11 @@ def set_is_girls():
     is_girls_school.set(1)
     is_boys_school.set(0)
     config_data.is_girls = True
+    config_data.save()
+
+
+def set_freshman_year():
+    config_data.year = freshman_year.get()
     config_data.save()
 
 
