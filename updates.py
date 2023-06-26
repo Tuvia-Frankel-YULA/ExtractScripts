@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import sys
 import time
 import tkinter
@@ -55,6 +56,14 @@ def download_update():
 
     shutil.copytree(os.path.join(script_directory, 'ExtractScripts-main'), script_directory, dirs_exist_ok=True)
     shutil.rmtree(os.path.join(script_directory, 'ExtractScripts-main'))
+
+    subprocess.check_call([
+        sys.executable,
+        '-m',
+        'pip',
+        'install',
+        '-r',
+        os.path.join(script_directory, 'requirements.txt')])
 
     window.update()
     window.quit()
