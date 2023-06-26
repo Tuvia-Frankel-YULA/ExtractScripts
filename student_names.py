@@ -1,7 +1,8 @@
 import csv
-import json
 import os
 import sys
+
+import config
 
 
 class TaskData:
@@ -11,15 +12,13 @@ class TaskData:
                  email: str,
                  grade: int,
                  year: int,
-                 is_girls: bool,
-                 email_suffix: str):
+                 config_data: config.Config):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.grade = grade
         self.year = year
-        self.is_girls = is_girls
-        self.email_suffix = email_suffix
+        self.config_data = config_data
 
 
 class Task:
@@ -30,44 +29,36 @@ class Task:
     def do(self, in_file: str, out_folder: str):
         script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
         os.makedirs(out_folder, exist_ok=True)
-        with open(os.path.join(script_directory, 'config', 'config.json')) as config_file:
-            config = json.load(config_file)
-            year = int(str(config['year']).strip())
-            grades = list(map(int, map(str, config['grades'])))
-            is_girls_val = config['is_girls']
-            is_girls = isinstance(is_girls_val, bool) and is_girls_val \
-                or isinstance(is_girls_val, int) and is_girls_val > 0\
-                or isinstance(is_girls_val, float) and is_girls_val > 0\
-                or str(is_girls_val).lower() == 't' \
-                or str(is_girls_val).lower() == 'true' \
 
-            with open(in_file) as csv_in:
-                csv_reader = csv.DictReader(csv_in)
+        config_data = config.Config()
 
-                with open(os.path.join(out_folder, self.out_file), 'w') as csv_out:
-                    csv_writer = csv.DictWriter(csv_out, self.rows)
+        with open(in_file) as csv_in:
+            csv_reader = csv.DictReader(csv_in)
 
-                    self.pre_pre_process(csv_writer)
-                    csv_writer.writeheader()
-                    self.pre_process(csv_writer)
+            with open(os.path.join(out_folder, self.out_file), 'w') as csv_out:
+                csv_writer = csv.DictWriter(csv_out, self.rows)
 
-                    for row in csv_reader:
-                        email_suffix = str(config['email']).strip()
+                self.pre_pre_process(csv_writer)
+                csv_writer.writeheader()
+                self.pre_process(csv_writer)
 
-                        last_name = str(row['Last Name']).strip()
-                        first_name = str(row['Student Name']).strip().removesuffix(last_name).strip()
-                        email = (first_name[0] + last_name + str(year) + email_suffix).lower()
-                        grade = int(row['Grade'].strip())
+                for row in csv_reader:
+                    grade = int(row['Grade'].strip())
+                    year = config_data.year_map[grade]
 
-                        if grade in grades:
-                            csv_writer.writerow(self.process(row,
-                                                             TaskData(first_name,
-                                                                      last_name,
-                                                                      email,
-                                                                      grade,
-                                                                      year,
-                                                                      is_girls,
-                                                                      email_suffix)))
+                    last_name = str(row['Last Name']).strip()
+                    first_name = str(row['Student Name']).strip().removesuffix(last_name).strip()
+                    email = (first_name[0] + last_name + str(year) + config_data.email_suffix).lower()
+
+
+                    if grade in config_data.grades:
+                        csv_writer.writerow(self.process(row,
+                                                         TaskData(first_name,
+                                                                  last_name,
+                                                                  email,
+                                                                  grade,
+                                                                  year,
+                                                                  config_data)))
 
         print('Task "' + self.__class__.__name__ + '" is done')
 
@@ -120,7 +111,7 @@ class GmailTask(Task):
             'Last Name [Required]': data.last_name,
             'Email Address [Required]': data.email,
             'Password [Required]': 'YULA' + str(data.year),
-            'Org Unit Path [Required]': '/YULA ' + ('Girls' if data.is_girls else 'Boys') + '/' + str(data.year),
+            'Org Unit Path [Required]': '/YULA ' + ('Girls' if data.config_data.is_girls else 'Boys') + '/' + str(data.year),
             'Change Password at Next Sign-In': 'TRUE',
             'Advanced Protection Program enrollment': 'FALSE'
         }
@@ -155,7 +146,7 @@ class AdobeTask(Task):
             'Last Name': data.last_name,
             'Country Code': 'US',
             'Product Configurations': 'Adobe Creative Cloud - YULA High Schools',
-            'User Groups': 'YULA ' + ('Girls' if data.is_girls else 'Boys')
+            'User Groups': 'YULA ' + ('Girls' if data.config_data.is_girls else 'Boys')
         }
 
 
@@ -226,9 +217,9 @@ class MosyleTask(Task):
     def process(self, row, data: TaskData):
         return {
             '#Full Name': data.first_name + ' ' + data.last_name,
-            'Person ID': data.email.removesuffix(data.email_suffix),
+            'Person ID': data.email.removesuffix(data.config_data.email_suffix),
             'Email': data.email,
-            'Location': 'YULA Girls' if data.is_girls else 'YULA Boys',
+            'Location': 'YULA Girls' if data.config_data.is_girls else 'YULA Boys',
             'Grade Level': str(data.year),
         }
 
