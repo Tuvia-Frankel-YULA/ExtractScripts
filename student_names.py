@@ -2,7 +2,7 @@ import csv
 import os
 import sys
 
-import config
+import configdata
 
 
 class TaskData:
@@ -12,7 +12,7 @@ class TaskData:
                  email: str,
                  grade: int,
                  year: int,
-                 config_data: config.Config):
+                 config_data: configdata.Config):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -27,10 +27,9 @@ class Task:
         self.rows = []
 
     def do(self, in_file: str, out_folder: str):
-        script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
         os.makedirs(out_folder, exist_ok=True)
 
-        config_data = config.Config()
+        config_data = configdata.Config()
 
         with open(in_file) as csv_in:
             csv_reader = csv.DictReader(csv_in)
