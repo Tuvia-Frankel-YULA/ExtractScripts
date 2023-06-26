@@ -42,7 +42,7 @@ def check_update() -> bool:
 def download_update():
     window = tkinter.Tk()
 
-    label = tkinter.Label(window, text="Downloading update:")
+    label = tkinter.Label(window, text="Downloading update...")
     label.pack()
 
     window.update()
