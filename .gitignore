@@ -2,6 +2,7 @@ in
 out
 main.zip
 .installed
+config
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
