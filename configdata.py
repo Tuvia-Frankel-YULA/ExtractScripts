@@ -21,6 +21,7 @@ class Config:
             }
             self.is_girls = False
             self.email_suffix = '@yula.org'
+            self.teacher_overrides = []
             self.save()
         else:
             with open(self.config_file_path) as config_file:
@@ -42,6 +43,7 @@ class Config:
                                 or str(is_girls_val).lower() == 't' \
                                 or str(is_girls_val).lower() == 'true'
                 self.email_suffix = str(config['email']).strip()
+                self.teacher_overrides = list(config['teacher_overrides'])
 
     def save(self):
         os.makedirs(self.config_folder_path, exist_ok=True)
@@ -50,7 +52,16 @@ class Config:
             'grades': self.grades,
             'is_girls': self.is_girls,
             'email': self.email_suffix,
+            'teacher_overrides': self.teacher_overrides
         }
 
         with open(self.config_file_path, 'w') as config_file:
             json.dump(config, config_file)
+
+    def get_schoology_uuid(self, senior_sys_uuid: str) -> str:
+        for override in self.teacher_overrides:
+            key = 'girls_uuid' if self.is_girls else 'boys_uuid'
+            if override[key] == senior_sys_uuid:
+                return override['schoology_uuid']
+
+        return senior_sys_uuid

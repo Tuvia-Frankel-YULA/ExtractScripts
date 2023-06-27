@@ -7,10 +7,12 @@ from typing import Any, Tuple
 import tkinter.messagebox
 
 import configdata
+import senior_sys
 import student_names
 
 scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
-    ("Student names", student_names.run_tasks)
+    ("Senior Systems extracts - Teacher Info", senior_sys.run_teacher_extract),
+    ("Student accounts from student list.", student_names.run_tasks)
 ]
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -29,6 +31,7 @@ global file_in_text
 global folder_out_text
 
 global config_data
+config_data: configdata.Config
 
 
 def show_gui():
@@ -109,6 +112,9 @@ def show_gui():
     twelveth_checkbox = tkinter.Checkbutton(grades_layout, text="12th", variable=allow_twelve, command=set_allow_twelve)
     twelveth_checkbox.grid(row=0, column=4)
 
+    edit_button = tkinter.Button(window, text="Edit teacher overrides 🗗", command=show_teachers_edit)
+    edit_button.grid(sticky='WE')
+
     tkinter.Label(window, text="Files: ").grid(sticky='WE')
 
     global file_in_text
@@ -147,7 +153,7 @@ def show_gui():
     btn.grid(sticky='WE')
 
     window.columnconfigure('all', weight=1)
-    window.rowconfigure(8, weight=1)
+    window.rowconfigure(9, weight=1)
     window.mainloop()
 
 
@@ -228,6 +234,118 @@ def set_allow_twelve():
             config_data.grades.remove(12)
 
     config_data.save()
+
+
+def show_teachers_edit():
+    window = tkinter.Toplevel()
+    window.title('Edit teacher overrides')
+    window.geometry('1100x600')
+
+    row_getters = []
+
+    frame = tkinter.Frame(window)
+    frame.pack(anchor='n', fill='x')
+
+    # In the config data, girls come first, but I put boys first in the UI b/c why not
+    tkinter.Label(frame, text='____', relief='sunken').grid(row=0, column=0)
+    tkinter.Label(frame, text='Name', relief='sunken').grid(row=0, column=1, sticky='WE')
+    tkinter.Label(frame, text='Boy\'s School ID', relief='sunken').grid(row=0, column=2, sticky='WE')
+    tkinter.Label(frame, text='Girl\'s School ID', relief='sunken').grid(row=0, column=3, sticky='WE')
+    tkinter.Label(frame, text='Schoology Unique ID', relief='sunken').grid(row=0, column=4, sticky='WE')
+
+    def add():
+        teachers_edit_row(frame, {'name': '', 'girls_uuid': '', 'boys_uuid': '', 'schoology_uuid': ''}, row_getters)
+        frame.rowconfigure('all', weight=1)
+        frame.columnconfigure('all', weight=1)
+        frame.columnconfigure(0, weight=0)
+
+    def close():
+        window.quit()
+        window.destroy()
+
+    def save():
+        config_data.teacher_overrides.clear()
+
+        for getter in row_getters:
+            config_data.teacher_overrides.append(getter())
+
+        config_data.save()
+
+        close()
+
+    for override in config_data.teacher_overrides:
+        teachers_edit_row(frame, override, row_getters)
+
+    frame.rowconfigure('all', weight=1)
+    frame.columnconfigure('all', weight=1)
+    frame.columnconfigure(0, weight=0)
+
+    buttons_layout = tkinter.Frame(window)
+    buttons_layout.pack(anchor='s', fill='x', side='bottom')
+
+    add_button = tkinter.Button(buttons_layout, text='Add teacher override', command=add)
+    add_button.grid(sticky='WE')
+
+    dialog_buttons_layout = tkinter.Frame(buttons_layout)
+    dialog_buttons_layout.grid(sticky='WE')
+
+    tkinter.Label(dialog_buttons_layout, text=' ').grid(row=0, column=0, sticky='WE')
+    cancel_button = tkinter.Button(dialog_buttons_layout, text='Cancel', command=close)
+    cancel_button.grid(row=0, column=1)
+    save_button = tkinter.Button(dialog_buttons_layout, text='Save', command=save)
+    save_button.grid(row=0, column=2)
+
+    dialog_buttons_layout.columnconfigure('all', pad=10)
+    dialog_buttons_layout.columnconfigure(0, weight=1)
+    buttons_layout.columnconfigure('all', weight=1)
+
+    window.mainloop()
+
+
+def teachers_edit_row(frame: tkinter.Frame, override: dict, row_getters: list):
+    i = len(row_getters) + 1
+
+    name_var = tkinter.StringVar()
+    name_var.set(override['name'])
+    girls_uuid_var = tkinter.StringVar()
+    girls_uuid_var.set(override['girls_uuid'])
+    boys_uuid_var = tkinter.StringVar()
+    boys_uuid_var.set(override['boys_uuid'])
+    schoology_uuid_var = tkinter.StringVar()
+    schoology_uuid_var.set(override['schoology_uuid'])
+
+    def getter():
+        return {
+            'name': name_var.get(),
+            'girls_uuid': girls_uuid_var.get(),
+            'boys_uuid': boys_uuid_var.get(),
+            'schoology_uuid': schoology_uuid_var.get()
+        }
+
+    row_getters.append(getter)
+
+    remove_button = tkinter.Button(frame, text='-')
+    remove_button.grid(row=i, column=0)
+
+    name_entry = tkinter.Entry(frame, textvariable=name_var)
+    name_entry.grid(row=i, column=1, sticky='WE')
+    boys_uuid_entry = tkinter.Entry(frame, textvariable=boys_uuid_var)
+    boys_uuid_entry.grid(row=i, column=2, sticky='WE')
+    girls_uuid_entry = tkinter.Entry(frame, textvariable=girls_uuid_var)
+    girls_uuid_entry.grid(row=i, column=3, sticky='WE')
+    schoology_uuid_entry = tkinter.Entry(frame, textvariable=schoology_uuid_var)
+    schoology_uuid_entry.grid(row=i, column=4, sticky='WE')
+
+    widgets = [remove_button, name_entry, girls_uuid_entry, boys_uuid_entry, schoology_uuid_entry]
+
+    def remove():
+        for widget in widgets:
+            widget.grid_remove()
+            widget.destroy()
+
+        row_getters.remove(getter)
+
+    remove_button.configure(command=remove)
 
 
 def file_in_open_file_dialog():
