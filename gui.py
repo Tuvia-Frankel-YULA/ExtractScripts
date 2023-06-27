@@ -10,9 +10,12 @@ import configdata
 import senior_sys
 import student_names
 
+show_grade_select = False
+
 scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
     ("Senior Systems extracts - Teacher Info", senior_sys.run_teacher_extract),
-    ("Student accounts from student list.", student_names.run_tasks)
+    ("Senior Systems extracts - Student Info", senior_sys.run_student_extract),
+    # ("Student accounts from student list.", student_names.run_tasks)
 ]
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -72,45 +75,47 @@ def show_gui():
 
     year_label = tkinter.Label(year_layout, text="Year freshmen graduate: ")
     year_label.grid(row=0, column=0)
+    if show_grade_select:
+        global freshman_year
+        freshman_year = tkinter.StringVar()
+        freshman_year.set(str(config_data.year))
+        year_field = tkinter.Spinbox(year_layout, from_=0, to=10000, increment=1, textvariable=freshman_year,
+                                     command=set_freshman_year)
+        year_field.grid(row=0, column=1, sticky='WE')
 
-    global freshman_year
-    freshman_year = tkinter.StringVar()
-    freshman_year.set(str(config_data.year))
-    year_field = tkinter.Spinbox(year_layout, from_=0, to=10000, increment=1, textvariable=freshman_year,
-                                 command=set_freshman_year)
-    year_field.grid(row=0, column=1, sticky='WE')
+        year_layout.columnconfigure(1, weight=1)
 
-    year_layout.columnconfigure(1, weight=1)
+        grades_layout = tkinter.Frame(window)
+        grades_layout.grid(sticky="WE")
 
-    grades_layout = tkinter.Frame(window)
-    grades_layout.grid(sticky="WE")
+        grades_label = tkinter.Label(grades_layout, text='Process students in grade: ')
+        grades_label.grid(row=0, column=0)
 
-    grades_label = tkinter.Label(grades_layout, text='Process students in grade: ')
-    grades_label.grid(row=0, column=0)
+        global allow_nine
+        allow_nine = tkinter.IntVar()
+        allow_nine.set(9 in config_data.grades)
+        nineth_checkbox = tkinter.Checkbutton(grades_layout, text="9th", variable=allow_nine, command=set_allow_nine)
+        nineth_checkbox.grid(row=0, column=1)
 
-    global allow_nine
-    allow_nine = tkinter.IntVar()
-    allow_nine.set(9 in config_data.grades)
-    nineth_checkbox = tkinter.Checkbutton(grades_layout, text="9th", variable=allow_nine, command=set_allow_nine)
-    nineth_checkbox.grid(row=0, column=1)
+        global allow_ten
+        allow_ten = tkinter.IntVar()
+        allow_ten.set(10 in config_data.grades)
+        tenth_checkbox = tkinter.Checkbutton(grades_layout, text="10th", variable=allow_ten, command=set_allow_ten)
+        tenth_checkbox.grid(row=0, column=2)
 
-    global allow_ten
-    allow_ten = tkinter.IntVar()
-    allow_ten.set(10 in config_data.grades)
-    tenth_checkbox = tkinter.Checkbutton(grades_layout, text="10th", variable=allow_ten, command=set_allow_ten)
-    tenth_checkbox.grid(row=0, column=2)
+        global allow_eleven
+        allow_eleven = tkinter.IntVar()
+        allow_eleven.set(11 in config_data.grades)
+        eleventh_checkbox = tkinter.Checkbutton(grades_layout, text="11th", variable=allow_eleven,
+                                                command=set_allow_eleven)
+        eleventh_checkbox.grid(row=0, column=3)
 
-    global allow_eleven
-    allow_eleven = tkinter.IntVar()
-    allow_eleven.set(11 in config_data.grades)
-    eleventh_checkbox = tkinter.Checkbutton(grades_layout, text="11th", variable=allow_eleven, command=set_allow_eleven)
-    eleventh_checkbox.grid(row=0, column=3)
-
-    global allow_twelve
-    allow_twelve = tkinter.IntVar()
-    allow_twelve.set(12 in config_data.grades)
-    twelveth_checkbox = tkinter.Checkbutton(grades_layout, text="12th", variable=allow_twelve, command=set_allow_twelve)
-    twelveth_checkbox.grid(row=0, column=4)
+        global allow_twelve
+        allow_twelve = tkinter.IntVar()
+        allow_twelve.set(12 in config_data.grades)
+        twelveth_checkbox = tkinter.Checkbutton(grades_layout, text="12th", variable=allow_twelve,
+                                                command=set_allow_twelve)
+        twelveth_checkbox.grid(row=0, column=4)
 
     edit_button = tkinter.Button(window, text="Edit teacher overrides 🗗", command=show_teachers_edit)
     edit_button.grid(sticky='WE')
@@ -153,7 +158,7 @@ def show_gui():
     btn.grid(sticky='WE')
 
     window.columnconfigure('all', weight=1)
-    window.rowconfigure(9, weight=1)
+    window.rowconfigure(len(window.children) - 2, weight=1)
     window.mainloop()
 
 

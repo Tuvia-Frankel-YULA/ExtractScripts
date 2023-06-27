@@ -45,12 +45,32 @@ class TeacherInfoExtract(SeniorSysExtract):
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter) -> {}:
         csv_writer.writerow({
-            'First Name': row['First Name'],
-            'Last Name': row['Last Name'],
-            'E-mail': row['E-mail'],
-            'User Unique ID': config_data.get_schoology_uuid(row['ID'])
+            'First Name': str(row['First Name']),
+            'Last Name': str(row['Last Name']),
+            'E-mail': str(row['E-mail']),
+            'User Unique ID': config_data.get_teacher_schoology_uuid(str(row['ID']))
         })
 
 
 def run_teacher_extract(input_file: str, output_folder: str):
     TeacherInfoExtract().do(input_file, output_folder)
+
+
+class StudentInfoExtract(SeniorSysExtract):
+    def __init__(self):
+        super().__init__()
+        self.out_file = 'StudentInfo.csv'
+        self.rows = ['First Name', 'Last Name', 'E-mail', 'User Unique ID', 'Grad Year']
+
+    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter) -> {}:
+        csv_writer.writerow({
+            'First Name': str(row['First Name']),
+            'Last Name': str(row['Last Name']),
+            'E-mail': str(row['Student E-mail']),
+            'User Unique ID': config_data.get_student_uuid_prefix() + str(row['ID']),
+            'Grad Year': int(row['Class Year'])
+        })
+
+
+def run_student_extract(input_file: str, output_folder: str):
+    StudentInfoExtract().do(input_file, output_folder)
