@@ -1,6 +1,5 @@
 import csv
 import os
-import sys
 
 import configdata
 
@@ -109,7 +108,7 @@ class GmailTask(Task):
             'First Name [Required]': data.first_name,
             'Last Name [Required]': data.last_name,
             'Email Address [Required]': data.email,
-            'Password [Required]': 'YULA' + str(data.year),
+            'Password [Required]': 'YULA' + str(data.year) + '!',
             'Org Unit Path [Required]': '/YULA ' + ('Girls' if data.config_data.is_girls else 'Boys') + '/' + str(data.year),
             'Change Password at Next Sign-In': 'TRUE',
             'Advanced Protection Program enrollment': 'FALSE'
