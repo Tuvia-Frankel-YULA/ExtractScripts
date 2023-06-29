@@ -33,6 +33,7 @@ class Config:
                 12: self.year - 3
             }
             self.is_girls = False
+            self.semester = 1
             self.teacher_overrides = []
             self.save()
         else:
@@ -49,6 +50,7 @@ class Config:
 
                 self.grades = list(map(int, map(str, config['grades'])))
                 self.is_girls = util.is_true_complex(config['is_girls'])
+                self.semester = int(config['semester'])
                 self.teacher_overrides = list(config['teacher_overrides'])
 
     def save(self):
@@ -57,6 +59,7 @@ class Config:
             'year': self.year,
             'grades': self.grades,
             'is_girls': self.is_girls,
+            'semester': self.semester,
             'teacher_overrides': self.teacher_overrides
         }
 

@@ -21,3 +21,26 @@ def uri_to_path(uri: str) -> str:
         return uri.removeprefix('file://')
     else:
         raise Exception("Unsupported uri type!")
+
+
+def course_code(section_id: str, prefix: str, semester: int) -> str:
+    section_id_suffix = '-' + section_id.split('-')[-1]
+    return prefix \
+        + section_id.removesuffix(section_id_suffix) \
+        + '-S' + str(semester)
+
+
+def section_id_header(i: int):
+    return 'Section ID (' + str(i) + ') - Classes Cluster'
+
+
+def section_number_header(i: int):
+    return 'Section Number (' + str(i) + ') - Classes Cluster'
+
+
+def faculty_id_primary_header(i: int):
+    return 'Faculty ID (Primary) (1) - Classes Cluster'
+
+
+def faculty_name_primary_header(i: int):
+    return 'Faculty Name (Primary) (' + str(i) + ') - Classes Cluster'

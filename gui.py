@@ -17,6 +17,7 @@ scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
     ("Senior Systems extracts - Teacher Info", senior_sys.run_teacher_extract),
     ("Senior Systems extracts - Student Info", senior_sys.run_student_extract),
     ("Senior Systems extracts - Course Info", senior_sys.run_course_extract),
+    ("Senior Systems extracts - Student Membership (Course Enrollments)", senior_sys.run_student_membership_extract),
     # ("Student accounts from student list.", student_names.run_tasks)
 ]
 
@@ -26,6 +27,7 @@ out_default_folder = os.path.join(script_directory, 'out')
 
 global is_boys_school
 global is_girls_school
+global semester_str
 global freshman_year
 global allow_nine
 global allow_ten
@@ -48,7 +50,7 @@ def show_gui():
 
     window = tkinter.Tk()
     window.title('Yula Scripts')
-    window.geometry('900x500')
+    window.geometry('900x900')
 
     tkinter.Label(window, text="Config: ").grid(sticky='WE')
 
@@ -72,12 +74,24 @@ def show_gui():
     is_girls_check = tkinter.Checkbutton(school_layout, text="Girls", variable=is_girls_school, command=set_is_girls)
     is_girls_check.grid(row=0, column=2)
 
-    year_layout = tkinter.Frame(window)
-    year_layout.grid(sticky='WE')
+    semester_layout = tkinter.Frame(window)
+    semester_layout.grid(sticky='WE')
 
-    year_label = tkinter.Label(year_layout, text="Year freshmen graduate: ")
-    year_label.grid(row=0, column=0)
+    global semester_str
+    semester_str = tkinter.StringVar()
+    semester_str.set(str(config_data.semester))
+    tkinter.Label(semester_layout, text='Current Semester: ').grid(row=0, column=0)
+    tkinter.Spinbox(semester_layout, from_=1, to=2, increment=1, textvariable=semester_str, command=set_semester).grid(row=0, column=1, sticky='WE')
+
+    semester_layout.columnconfigure(1, weight=1)
+
     if show_grade_select:
+        year_layout = tkinter.Frame(window)
+        year_layout.grid(sticky='WE')
+
+        year_label = tkinter.Label(year_layout, text="Year freshmen graduate: ")
+        year_label.grid(row=0, column=0)
+
         global freshman_year
         freshman_year = tkinter.StringVar()
         freshman_year.set(str(config_data.year))
@@ -191,6 +205,11 @@ def set_is_girls():
     is_girls_school.set(1)
     is_boys_school.set(0)
     config_data.is_girls = True
+    config_data.save()
+
+
+def set_semester():
+    config_data.semester = int(semester_str.get())
     config_data.save()
 
 

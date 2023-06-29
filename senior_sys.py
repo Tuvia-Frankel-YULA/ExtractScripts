@@ -92,17 +92,12 @@ class CourseInfoExtract(SeniorSysExtract):
             semesters.append(2)
 
         section_id = str(row['Section ID'])
-        section_id_suffix = '-' + section_id.split('-')[-1]
-
         course_name = str(row['Course Name'])
         section_number = str(row['Section No'])
         room = str(row['Room'])
 
         for semester in semesters:
-            course_code = \
-                config_data.get_course_code_prefix() \
-                + section_id.removesuffix(section_id_suffix) \
-                + '-S' + str(semester)
+            course_code = util.course_code(section_id, config_data.get_course_code_prefix(), semester)
 
             csv_writer.writerow({
                 'Course Code': course_code,
@@ -116,3 +111,34 @@ class CourseInfoExtract(SeniorSysExtract):
 
 def run_course_extract(input_file: str, output_folder: str):
     CourseInfoExtract().do(input_file, output_folder)
+
+
+class StudentMembershipExtract(SeniorSysExtract):
+    def __init__(self):
+        super().__init__()
+        self.out_file = 'StudentMembership.csv'
+        self.rows = ['Course Code', 'Section Code', 'Unique User ID']
+
+    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
+        uuid = config_data.get_student_uuid_prefix() + str(row['Export ID'])
+
+        i = 1
+        while util.section_id_header(i) in row:
+            section_id = str(row[util.section_id_header(i)])
+            course_code = util.course_code(section_id,
+                                           config_data.get_course_code_prefix(),
+                                           config_data.semester)
+
+            if section_id != '':
+                section_number = row[util.section_number_header(i)]
+                csv_writer.writerow({
+                    'Course Code': course_code,
+                    'Section Code': str(section_number),
+                    'Unique User ID': uuid
+                })
+
+            i += 1
+
+
+def run_student_membership_extract(input_file: str, output_folder: str):
+    StudentMembershipExtract().do(input_file, output_folder)
