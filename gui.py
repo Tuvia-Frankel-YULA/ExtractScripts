@@ -13,13 +13,16 @@ import student_names
 
 show_grade_select = False
 
-scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
-    ("Senior Systems extracts - Teacher Info", senior_sys.run_teacher_extract),
-    ("Senior Systems extracts - Student Info", senior_sys.run_student_extract),
-    ("Senior Systems extracts - Course Info", senior_sys.run_course_extract),
-    ("Senior Systems extracts - Student/Teacher Membership (Course Enrollments)", senior_sys.run_membership_extract),
-    # ("Student accounts from student list.", student_names.run_tasks)
+scripts: list[Tuple[str, Callable[[str, str], Any], str]] = [
+    ('Senior Systems - Student Membership', senior_sys.run_student_membership_extract, 'student_membership_extract'),
+    ('Senior Systems - Teacher Membership', senior_sys.run_teacher_membership_extract, 'teacher_membership_extract'),
+    ('Senior Systems - Teacher Info', senior_sys.run_teacher_extract, 'teacher_extract'),
+    ('Senior Systems - Student Info', senior_sys.run_student_extract, 'student_extract'),
+    ('Senior Systems - Course Info', senior_sys.run_course_extract, 'course_extract'),
+    # ('Student accounts from student list.', student_names.run_tasks, 'student_names')
 ]
+
+csv_filetypes = [('CSV file (*.csv)', '*.csv')]
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 in_default_folder = os.path.join(script_directory, 'in')
@@ -35,7 +38,6 @@ global allow_eleven
 global allow_twelve
 
 global file_in_text
-global folder_out_text
 
 global config_data
 config_data: configdata.Config
@@ -137,17 +139,9 @@ def show_gui():
     edit_button = tkinter.Button(window, text="Edit teacher overrides 🗗", command=show_teachers_edit)
     edit_button.grid(sticky='WE')
 
-    tkinter.Label(window, text="Files: ").grid(sticky='WE')
-
     global file_in_text
     file_in_text = tkinter.StringVar()
-    file_in_text.set(os.path.join(in_default_folder, 'names.csv'))
     file_entry('Input Filename: ', window, file_in_text, file_in_open_file_dialog)
-
-    global folder_out_text
-    folder_out_text = tkinter.StringVar()
-    folder_out_text.set(out_default_folder)
-    file_entry('Output folder: ', window, folder_out_text, folder_out_open_file_dialog)
 
     lb_label = tkinter.Label(window, text='Select script to run:')
     lb_label.grid()
@@ -163,10 +157,30 @@ def show_gui():
 
     def run_script():
         try:
+            in_file = file_in_text.get()
+
+            if len(in_file) <= 0:
+                raise Exception('Please specify a valid input file')
+            if not os.path.exists(in_file):
+                raise Exception('Failed to find file: "' + in_file + '"')
+
             for selection in lb.curselection():
-                func: Callable[[str, str], Any] = scripts[selection][1]
-                func(file_in_text.get(), folder_out_text.get())
-            tkinter.messagebox.showinfo('Success', 'All tasks completed successfully! Check output folder.')
+                prev_file_key: str = scripts[selection][2]
+                prev_file = config_data.get_prev_output_file(prev_file_key)
+                out_file = platform.show_save_file(
+                    'Save file for ' + scripts[selection][0],
+                    csv_filetypes,
+                    prev_file)
+
+                if len(out_file) > 0:
+                    out_file += '' if out_file.endswith('.csv') else '.csv'
+                    config_data.set_prev_output_file(prev_file_key, out_file)
+                    config_data.save()
+
+                    func: Callable[[str, str], Any] = scripts[selection][1]
+                    func(in_file, out_file)
+                    tkinter.messagebox.showinfo('Success', scripts[selection][0] + ' ran successfully!')
+                    platform.start_file(os.path.dirname(out_file))
         except BaseException as e:
             tkinter.messagebox.showerror('Error!', str(e))
             raise e
@@ -378,21 +392,10 @@ def teachers_edit_row(frame: tkinter.Frame, override: dict, row_getters: list):
 def file_in_open_file_dialog():
     try:
         file_name = platform.show_open_file('Open csv file',
-                                            [('CSV file (*.csv)', '*.csv')],
+                                            csv_filetypes,
                                             in_default_folder)
         if os.path.exists(file_name):
             file_in_text.set(file_name)
-    except BaseException as e:
-        tkinter.messagebox.showerror('Error!', str(e))
-        raise e
-
-
-def folder_out_open_file_dialog():
-    try:
-        folder_name = platform.show_open_folder('Output csv folder',
-                                                in_default_folder)
-        if os.path.exists(folder_name):
-            folder_out_text.set(folder_name)
     except BaseException as e:
         tkinter.messagebox.showerror('Error!', str(e))
         raise e

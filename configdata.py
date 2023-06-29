@@ -35,6 +35,7 @@ class Config:
             self.is_girls = False
             self.semester = 1
             self.teacher_overrides = []
+            self.output_file_names = {}
             self.save()
         else:
             with open(self.config_file_path) as config_file:
@@ -52,6 +53,7 @@ class Config:
                 self.is_girls = util.is_true_complex(config['is_girls'])
                 self.semester = int(config['semester'])
                 self.teacher_overrides = list(config['teacher_overrides'])
+                self.output_file_names = dict(config['output_file_names'])
 
     def save(self):
         os.makedirs(self.config_folder_path, exist_ok=True)
@@ -60,11 +62,21 @@ class Config:
             'grades': self.grades,
             'is_girls': self.is_girls,
             'semester': self.semester,
-            'teacher_overrides': self.teacher_overrides
+            'teacher_overrides': self.teacher_overrides,
+            'output_file_names': self.output_file_names,
         }
 
         with open(self.config_file_path, 'w') as config_file:
             json.dump(config, config_file)
+
+    def get_prev_output_file(self, key: str) -> str:
+        if key in self.output_file_names:
+            return self.output_file_names[key]
+        else:
+            return ''
+
+    def set_prev_output_file(self, key: str, out_file: str):
+        self.output_file_names[key] = out_file
 
     def get_teacher_schoology_uuid(self, senior_sys_uuid: str) -> str:
         for override in self.teacher_overrides:

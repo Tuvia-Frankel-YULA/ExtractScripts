@@ -7,18 +7,17 @@ import util
 
 class SeniorSysExtract:
     def __init__(self):
-        self.out_file = 'output.csv'
         self.rows = []
 
-    def do(self, in_file: str, out_folder: str):
-        os.makedirs(out_folder, exist_ok=True)
+    def do(self, in_file: str, out_file: str):
+        os.makedirs(os.path.dirname(out_file), exist_ok=True)
 
         config_data = configdata.Config()
 
         with open(in_file) as csv_in:
             csv_reader = csv.DictReader(csv_in)
 
-            with open(os.path.join(out_folder, self.out_file), 'w') as csv_out:
+            with open(out_file, 'w') as csv_out:
                 csv_writer = csv.DictWriter(csv_out, self.rows)
 
                 self.pre_pre_process(csv_writer)
@@ -41,26 +40,29 @@ class SeniorSysExtract:
 class TeacherInfoExtract(SeniorSysExtract):
     def __init__(self):
         super().__init__()
-        self.out_file = 'TeacherInfo.csv'
         self.rows = ['First Name', 'Last Name', 'E-mail', 'User Unique ID']
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
+        email = str(row['E-mail'])
+
+        if '@' not in email:
+            return
+
         csv_writer.writerow({
             'First Name': str(row['First Name']),
             'Last Name': str(row['Last Name']),
-            'E-mail': str(row['E-mail']),
+            'E-mail': email,
             'User Unique ID': config_data.get_teacher_schoology_uuid(str(row['ID']))
         })
 
 
-def run_teacher_extract(input_file: str, output_folder: str):
-    TeacherInfoExtract().do(input_file, output_folder)
+def run_teacher_extract(input_file: str, output_file: str):
+    TeacherInfoExtract().do(input_file, output_file)
 
 
 class StudentInfoExtract(SeniorSysExtract):
     def __init__(self):
         super().__init__()
-        self.out_file = 'StudentInfo.csv'
         self.rows = ['First Name', 'Last Name', 'E-mail', 'User Unique ID', 'Grad Year']
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
@@ -73,14 +75,13 @@ class StudentInfoExtract(SeniorSysExtract):
         })
 
 
-def run_student_extract(input_file: str, output_folder: str):
-    StudentInfoExtract().do(input_file, output_folder)
+def run_student_extract(input_file: str, output_file: str):
+    StudentInfoExtract().do(input_file, output_file)
 
 
 class CourseInfoExtract(SeniorSysExtract):
     def __init__(self):
         super().__init__()
-        self.out_file = 'CourseInfo.csv'
         self.rows = ['Course Code', 'Course Name', 'Section Name', 'Section Code', 'Location', 'Grading Periods']
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
@@ -101,23 +102,22 @@ class CourseInfoExtract(SeniorSysExtract):
 
             csv_writer.writerow({
                 'Course Code': course_code,
-                'Course Name': course_name,
-                'Section Name': section_id,
+                'Course Name': course_name + ' Sem' + str(semester),
+                'Section Name': 'Section ' + section_number,
                 'Section Code': section_number,
                 'Location': room,
                 'Grading Periods': 'S' + str(semester)
             })
 
 
-def run_course_extract(input_file: str, output_folder: str):
-    CourseInfoExtract().do(input_file, output_folder)
+def run_course_extract(input_file: str, output_file: str):
+    CourseInfoExtract().do(input_file, output_file)
 
 
 class MembershipExtract(SeniorSysExtract):
     def __init__(self, is_teachers: bool):
         super().__init__()
         self.is_teachers = is_teachers
-        self.out_file = 'TeacherMembership.csv' if is_teachers else 'StudentMembership.csv'
         self.rows = ['Course Code', 'Section Code', 'Unique User ID']
 
         self.added_sections: list[str] = []
@@ -151,6 +151,9 @@ class MembershipExtract(SeniorSysExtract):
             i += 1
 
 
-def run_membership_extract(input_file: str, output_folder: str):
-    MembershipExtract(False).do(input_file, output_folder)
-    MembershipExtract(True).do(input_file, output_folder)
+def run_student_membership_extract(input_file: str, output_file: str):
+    MembershipExtract(False).do(input_file, output_file)
+
+
+def run_teacher_membership_extract(input_file: str, output_file: str):
+    MembershipExtract(True).do(input_file, output_file)

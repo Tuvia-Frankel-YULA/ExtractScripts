@@ -1,3 +1,5 @@
+import os
+import subprocess
 import sys
 from asyncio import Future
 from tkinter import filedialog
@@ -37,33 +39,57 @@ match sys.platform:
         util.run_sync(init())
 
 
-        def show_open_file(title: str, filetypes: list[(str, str)], default_folder: str) -> str:
-            return show_file_dialog(title, filetypes, False)
-
-        def show_open_folder(title: str, default_folder: str) -> str:
-            return show_file_dialog(title, [], True)
+        def start_file(path: str):
+            subprocess.call(['xdg-open', path])
 
 
-        def show_file_dialog(title: str, filetypes: list[(str, str)], is_folder: bool) -> str:
+        def show_open_file(title: str, filetypes: list[(str, str)], _: str) -> str:
+            filters = get_filters(filetypes)
+
+            async def do_async():
+                handle = await file_chooser_interface \
+                    .call_open_file('',
+                                    title, {
+                                        'filters': Variant('a(sa(us))', filters),
+                                    })
+                return await wait_for_file_dialog_response(handle)
+
+            return util.run_sync(do_async())
+
+
+        def show_save_file(title: str, filetypes: list[(str, str)], default_file: str) -> str:
+            filters = get_filters(filetypes)
+
+            async def do_async():
+                options = {
+                    'filters': Variant('a(sa(us))', filters),
+                } if len(default_file) <= 0 else {
+                    'filters': Variant('a(sa(us))', filters),
+                    'current_name': Variant('s', os.path.basename(default_file)),
+                }
+
+                handle = await file_chooser_interface.call_save_file('', title, options)
+                return await wait_for_file_dialog_response(handle)
+
+            return util.run_sync(do_async())
+
+
+        def get_filters(filetypes: list[(str, str)]):
             filters = []
 
             for filetype in filetypes:
                 filters.append([filetype[0], [[0, filetype[1]]]])
 
-            async def do_async():
-                handle = await file_chooser_interface.call_open_file('',
-                                                                     title, {
-                                                                         'filters': Variant('a(sa(us))', filters),
-                                                                         'directory': Variant('b', is_folder)
-                                                                     })
-                response = await wait_for_response(handle)
+            return filters
 
-                if response[0] == 0 and len(response[1]['uris'].value) > 0:
-                    return util.uri_to_path(response[1]['uris'].value[0])
-                else:
-                    return ''
 
-            return util.run_sync(do_async())
+        async def wait_for_file_dialog_response(handle) -> str:
+            response = await wait_for_response(handle)
+
+            if response[0] == 0 and len(response[1]['uris'].value) > 0:
+                return util.uri_to_path(response[1]['uris'].value[0])
+            else:
+                return ''
 
 
         async def wait_for_response(handle):
@@ -91,6 +117,10 @@ match sys.platform:
             return value
 
     case _:
+        def start_file(path: str):
+            pass
+
+
         def show_open_file(title: str, filetypes: list[(str, str)], default_folder: str) -> str:
             return filedialog.askopenfilename(
                 title=title,
@@ -98,7 +128,8 @@ match sys.platform:
                 initialdir=default_folder)
 
 
-        def show_open_folder(title: str, default_folder: str) -> str:
-            return filedialog.askdirectory(
+        def show_save_file(title: str, filetypes: list[(str, str)], default_file: str) -> str:
+            return filedialog.asksaveasfilename(
                 title=title,
-                initialdir=default_folder)
+                filetypes=filetypes,
+                initialfile=default_file if len(default_file) > 0 else None)
