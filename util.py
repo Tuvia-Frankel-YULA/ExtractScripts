@@ -20,7 +20,7 @@ def uri_to_path(uri: str) -> str:
     if uri.startswith('file://'):
         return uri.removeprefix('file://')
     else:
-        raise Exception("Unsupported uri type!")
+        raise Exception('Unsupported uri type!\nFile:"' + uri + '"')
 
 
 def course_code(section_id: str, prefix: str, semester: int) -> str:

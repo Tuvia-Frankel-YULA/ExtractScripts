@@ -81,7 +81,8 @@ def show_gui():
     semester_str = tkinter.StringVar()
     semester_str.set(str(config_data.semester))
     tkinter.Label(semester_layout, text='Current Semester: ').grid(row=0, column=0)
-    tkinter.Spinbox(semester_layout, from_=1, to=2, increment=1, textvariable=semester_str, command=set_semester).grid(row=0, column=1, sticky='WE')
+    tkinter.Spinbox(semester_layout, from_=1, to=2, increment=1, textvariable=semester_str, command=set_semester).grid(
+        row=0, column=1, sticky='WE')
 
     semester_layout.columnconfigure(1, weight=1)
 
@@ -375,15 +376,23 @@ def teachers_edit_row(frame: tkinter.Frame, override: dict, row_getters: list):
 
 
 def file_in_open_file_dialog():
-    file_name = platform.show_open_file('Open csv file',
-                                        [('CSV file (*.csv)', '*.csv')],
-                                        in_default_folder)
-    if os.path.exists(file_name):
-        file_in_text.set(file_name)
+    try:
+        file_name = platform.show_open_file('Open csv file',
+                                            [('CSV file (*.csv)', '*.csv')],
+                                            in_default_folder)
+        if os.path.exists(file_name):
+            file_in_text.set(file_name)
+    except BaseException as e:
+        tkinter.messagebox.showerror('Error!', str(e))
+        raise e
 
 
 def folder_out_open_file_dialog():
-    folder_name = platform.show_open_folder('Output csv folder',
-                                            in_default_folder)
-    if os.path.exists(folder_name):
-        folder_out_text.set(folder_name)
+    try:
+        folder_name = platform.show_open_folder('Output csv folder',
+                                                in_default_folder)
+        if os.path.exists(folder_name):
+            folder_out_text.set(folder_name)
+    except BaseException as e:
+        tkinter.messagebox.showerror('Error!', str(e))
+        raise e
