@@ -14,8 +14,8 @@ import student_names
 show_grade_select = False
 
 scripts: list[Tuple[str, Callable[[str, str], Any], str]] = [
-    ('Senior Systems - Student Membership', senior_sys.run_student_membership_extract, 'student_membership_extract'),
-    ('Senior Systems - Teacher Membership', senior_sys.run_teacher_membership_extract, 'teacher_membership_extract'),
+    ('Senior Systems - Student Roster', senior_sys.run_student_membership_extract, 'student_membership_extract'),
+    ('Senior Systems - Teacher Roster', senior_sys.run_teacher_membership_extract, 'teacher_membership_extract'),
     ('Senior Systems - Teacher Info', senior_sys.run_teacher_extract, 'teacher_extract'),
     ('Senior Systems - Student Info', senior_sys.run_student_extract, 'student_extract'),
     ('Senior Systems - Course Info', senior_sys.run_course_extract, 'course_extract'),

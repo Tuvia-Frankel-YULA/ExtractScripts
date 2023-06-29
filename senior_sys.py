@@ -45,7 +45,7 @@ class TeacherInfoExtract(SeniorSysExtract):
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
         email = str(row['E-mail'])
 
-        if '@' not in email:
+        if not email.endswith(config_data.email_suffix):
             return
 
         csv_writer.writerow({
