@@ -3,6 +3,8 @@ import json
 import os
 import sys
 
+import util
+
 
 class Config:
     def __init__(self):
@@ -10,6 +12,11 @@ class Config:
         self.student_uuid_prefix = {
             'boys': 'YHSBD',
             'girls': 'YHSGD'
+        }
+
+        self.course_code_prefix = {
+            'boys': 'YHSBD_',
+            'girls': 'YHSGD_'
         }
 
         script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -41,12 +48,7 @@ class Config:
                 }
 
                 self.grades = list(map(int, map(str, config['grades'])))
-                is_girls_val = config['is_girls']
-                self.is_girls = isinstance(is_girls_val, bool) and is_girls_val \
-                                or isinstance(is_girls_val, int) and is_girls_val > 0 \
-                                or isinstance(is_girls_val, float) and is_girls_val > 0 \
-                                or str(is_girls_val).lower() == 't' \
-                                or str(is_girls_val).lower() == 'true'
+                self.is_girls = util.is_true_complex(config['is_girls'])
                 self.teacher_overrides = list(config['teacher_overrides'])
 
     def save(self):
@@ -74,3 +76,6 @@ class Config:
 
     def get_student_uuid_prefix(self) -> str:
         return self.student_uuid_prefix[self._get_div_accessor_name()]
+
+    def get_course_code_prefix(self) -> str:
+        return self.course_code_prefix[self._get_div_accessor_name()]

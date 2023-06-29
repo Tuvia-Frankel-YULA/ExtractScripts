@@ -7,6 +7,7 @@ from typing import Any, Tuple
 import tkinter.messagebox
 
 import configdata
+import platform
 import senior_sys
 import student_names
 
@@ -15,6 +16,7 @@ show_grade_select = False
 scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
     ("Senior Systems extracts - Teacher Info", senior_sys.run_teacher_extract),
     ("Senior Systems extracts - Student Info", senior_sys.run_student_extract),
+    ("Senior Systems extracts - Course Info", senior_sys.run_course_extract),
     # ("Student accounts from student list.", student_names.run_tasks)
 ]
 
@@ -354,15 +356,15 @@ def teachers_edit_row(frame: tkinter.Frame, override: dict, row_getters: list):
 
 
 def file_in_open_file_dialog():
-    file_name = filedialog.askopenfilename(
-        title='Open csv file',
-        filetypes=[('CSV file (*.csv)', '*.csv')],
-        initialdir=in_default_folder)
-    file_in_text.set(file_name)
+    file_name = platform.show_open_file('Open csv file',
+                                        [('CSV file (*.csv)', '*.csv')],
+                                        in_default_folder)
+    if os.path.exists(file_name):
+        file_in_text.set(file_name)
 
 
 def folder_out_open_file_dialog():
-    folder_name = filedialog.askdirectory(
-        title='Output csv folder',
-        initialdir=in_default_folder)
-    folder_out_text.set(folder_name)
+    folder_name = platform.show_open_folder('Output csv folder',
+                                            in_default_folder)
+    if os.path.exists(folder_name):
+        folder_out_text.set(folder_name)

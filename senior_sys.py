@@ -2,6 +2,7 @@ import csv
 import os
 
 import configdata
+import util
 
 
 class SeniorSysExtract:
@@ -33,8 +34,8 @@ class SeniorSysExtract:
     def pre_process(self, csv_writer: csv.DictWriter):
         pass
 
-    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter) -> {}:
-        return {}
+    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
+        pass
 
 
 class TeacherInfoExtract(SeniorSysExtract):
@@ -43,7 +44,7 @@ class TeacherInfoExtract(SeniorSysExtract):
         self.out_file = 'TeacherInfo.csv'
         self.rows = ['First Name', 'Last Name', 'E-mail', 'User Unique ID']
 
-    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter) -> {}:
+    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
         csv_writer.writerow({
             'First Name': str(row['First Name']),
             'Last Name': str(row['Last Name']),
@@ -62,7 +63,7 @@ class StudentInfoExtract(SeniorSysExtract):
         self.out_file = 'StudentInfo.csv'
         self.rows = ['First Name', 'Last Name', 'E-mail', 'User Unique ID', 'Grad Year']
 
-    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter) -> {}:
+    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
         csv_writer.writerow({
             'First Name': str(row['First Name']),
             'Last Name': str(row['Last Name']),
@@ -74,3 +75,44 @@ class StudentInfoExtract(SeniorSysExtract):
 
 def run_student_extract(input_file: str, output_folder: str):
     StudentInfoExtract().do(input_file, output_folder)
+
+
+class CourseInfoExtract(SeniorSysExtract):
+    def __init__(self):
+        super().__init__()
+        self.out_file = 'CourseInfo.csv'
+        self.rows = ['Course Code', 'Course Name', 'Section Name', 'Section Code', 'Location', 'Grading Periods']
+
+    def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
+        semesters = []
+
+        if util.is_true_complex(row['Meets Terms S1']):
+            semesters.append(1)
+        if util.is_true_complex(row['Meets Terms S2']):
+            semesters.append(2)
+
+        section_id = str(row['Section ID'])
+        section_id_suffix = '-' + section_id.split('-')[-1]
+
+        course_name = str(row['Course Name'])
+        section_number = str(row['Section No'])
+        room = str(row['Room'])
+
+        for semester in semesters:
+            course_code = \
+                config_data.get_course_code_prefix() \
+                + section_id.removesuffix(section_id_suffix) \
+                + '-S' + str(semester)
+
+            csv_writer.writerow({
+                'Course Code': course_code,
+                'Course Name': course_name,
+                'Section Name': section_id,
+                'Section Code': section_number,
+                'Location': room,
+                'Grading Periods': 'S' + str(semester)
+            })
+
+
+def run_course_extract(input_file: str, output_folder: str):
+    CourseInfoExtract().do(input_file, output_folder)
