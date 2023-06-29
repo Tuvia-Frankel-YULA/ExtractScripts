@@ -17,7 +17,7 @@ scripts: list[Tuple[str, Callable[[str, str], Any]]] = [
     ("Senior Systems extracts - Teacher Info", senior_sys.run_teacher_extract),
     ("Senior Systems extracts - Student Info", senior_sys.run_student_extract),
     ("Senior Systems extracts - Course Info", senior_sys.run_course_extract),
-    ("Senior Systems extracts - Student Membership (Course Enrollments)", senior_sys.run_student_membership_extract),
+    ("Senior Systems extracts - Student/Teacher Membership (Course Enrollments)", senior_sys.run_membership_extract),
     # ("Student accounts from student list.", student_names.run_tasks)
 ]
 
@@ -161,7 +161,7 @@ def show_gui():
 
     lb.grid(sticky='NSWE')
 
-    def do_action():
+    def run_script():
         try:
             for selection in lb.curselection():
                 func: Callable[[str, str], Any] = scripts[selection][1]
@@ -171,7 +171,7 @@ def show_gui():
             tkinter.messagebox.showerror('Error!', str(e))
             raise e
 
-    btn = tkinter.Button(window, text="Do action", command=do_action)
+    btn = tkinter.Button(window, text="Run script", command=run_script)
     btn.grid(sticky='WE')
 
     window.columnconfigure('all', weight=1)

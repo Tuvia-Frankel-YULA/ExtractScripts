@@ -39,7 +39,7 @@ def section_number_header(i: int):
 
 
 def faculty_id_primary_header(i: int):
-    return 'Faculty ID (Primary) (1) - Classes Cluster'
+    return 'Faculty ID (Primary) (' + str(i) + ') - Classes Cluster'
 
 
 def faculty_name_primary_header(i: int):

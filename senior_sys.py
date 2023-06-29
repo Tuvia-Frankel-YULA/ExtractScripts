@@ -113,11 +113,14 @@ def run_course_extract(input_file: str, output_folder: str):
     CourseInfoExtract().do(input_file, output_folder)
 
 
-class StudentMembershipExtract(SeniorSysExtract):
-    def __init__(self):
+class MembershipExtract(SeniorSysExtract):
+    def __init__(self, is_teachers: bool):
         super().__init__()
-        self.out_file = 'StudentMembership.csv'
+        self.is_teachers = is_teachers
+        self.out_file = 'TeacherMembership.csv' if is_teachers else 'StudentMembership.csv'
         self.rows = ['Course Code', 'Section Code', 'Unique User ID']
+
+        self.added_sections: list[str] = []
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
         uuid = config_data.get_student_uuid_prefix() + str(row['Export ID'])
@@ -129,16 +132,25 @@ class StudentMembershipExtract(SeniorSysExtract):
                                            config_data.get_course_code_prefix(),
                                            config_data.semester)
 
-            if section_id != '':
-                section_number = row[util.section_number_header(i)]
+            faculty_id = str(row[util.faculty_id_primary_header(i)]) if self.is_teachers else 'N/A'
+
+            if section_id != '' and course_code not in self.added_sections and len(faculty_id) > 0:
+                if self.is_teachers:
+                    self.added_sections.append(course_code)
+
+                teacher_uuid = config_data.get_teacher_schoology_uuid(faculty_id)
+
+                section_number = str(row[util.section_number_header(i)])
+
                 csv_writer.writerow({
                     'Course Code': course_code,
-                    'Section Code': str(section_number),
-                    'Unique User ID': uuid
+                    'Section Code': section_number,
+                    'Unique User ID': teacher_uuid if self.is_teachers else uuid
                 })
 
             i += 1
 
 
-def run_student_membership_extract(input_file: str, output_folder: str):
-    StudentMembershipExtract().do(input_file, output_folder)
+def run_membership_extract(input_file: str, output_folder: str):
+    MembershipExtract(False).do(input_file, output_folder)
+    MembershipExtract(True).do(input_file, output_folder)
