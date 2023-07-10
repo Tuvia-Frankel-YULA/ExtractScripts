@@ -4,12 +4,11 @@ import sys
 from asyncio import Future
 from tkinter import filedialog
 
-from dbus_fast.aio import MessageBus
-
 import util
 
 match sys.platform:
     case 'linux':
+        from dbus_fast.aio import MessageBus
         from dbus_fast import Variant
 
         global bus

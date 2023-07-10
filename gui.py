@@ -7,7 +7,7 @@ from typing import Any, Tuple
 import tkinter.messagebox
 
 import configdata
-import platform
+import platform_util
 import senior_sys
 import student_names
 
@@ -167,7 +167,7 @@ def show_gui():
             for selection in lb.curselection():
                 prev_file_key: str = scripts[selection][2]
                 prev_file = config_data.get_prev_output_file(prev_file_key)
-                out_file = platform.show_save_file(
+                out_file = platform_util.show_save_file(
                     'Save file for ' + scripts[selection][0],
                     csv_filetypes,
                     prev_file)
@@ -180,7 +180,7 @@ def show_gui():
                     func: Callable[[str, str], Any] = scripts[selection][1]
                     func(in_file, out_file)
                     tkinter.messagebox.showinfo('Success', scripts[selection][0] + ' ran successfully!')
-                    platform.start_file(os.path.dirname(out_file))
+                    platform_util.start_file(os.path.dirname(out_file))
         except BaseException as e:
             tkinter.messagebox.showerror('Error!', str(e))
             raise e
@@ -391,9 +391,9 @@ def teachers_edit_row(frame: tkinter.Frame, override: dict, row_getters: list):
 
 def file_in_open_file_dialog():
     try:
-        file_name = platform.show_open_file('Open csv file',
-                                            csv_filetypes,
-                                            in_default_folder)
+        file_name = platform_util.show_open_file('Open csv file',
+                                                 csv_filetypes,
+                                                 in_default_folder)
         if os.path.exists(file_name):
             file_in_text.set(file_name)
     except BaseException as e:
