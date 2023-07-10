@@ -19,6 +19,11 @@ class Config:
             'girls': 'YHSGD_'
         }
 
+        self.excluded_uuids = [
+            'WEBSV',
+            'TESTGIR'
+        ]
+
         script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
         self.config_folder_path = os.path.join(script_directory, 'config')
         self.config_file_path = os.path.join(self.config_folder_path, 'config.json')

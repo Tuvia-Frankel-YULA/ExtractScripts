@@ -44,15 +44,19 @@ class TeacherInfoExtract(SeniorSysExtract):
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
         email = str(row['E-mail'])
+        uuid = str(row['ID'])
 
         if not email.endswith(config_data.email_suffix):
+            return
+
+        if uuid in config_data.excluded_uuids:
             return
 
         csv_writer.writerow({
             'First Name': str(row['First Name']),
             'Last Name': str(row['Last Name']),
             'E-mail': email,
-            'User Unique ID': config_data.get_teacher_schoology_uuid(str(row['ID']))
+            'User Unique ID': config_data.get_teacher_schoology_uuid(uuid)
         })
 
 
@@ -66,11 +70,16 @@ class StudentInfoExtract(SeniorSysExtract):
         self.rows = ['First Name', 'Last Name', 'E-mail', 'User Unique ID', 'Grad Year']
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
+        uuid = str(row['ID'])
+
+        if uuid in config_data.excluded_uuids:
+            return
+
         csv_writer.writerow({
             'First Name': str(row['First Name']),
             'Last Name': str(row['Last Name']),
             'E-mail': str(row['Student E-mail']),
-            'User Unique ID': config_data.get_student_uuid_prefix() + str(row['ID']),
+            'User Unique ID': config_data.get_student_uuid_prefix() + uuid,
             'Grad Year': int(row['Class Year'])
         })
 
@@ -123,7 +132,12 @@ class MembershipExtract(SeniorSysExtract):
         self.added_sections: list[str] = []
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
-        uuid = config_data.get_student_uuid_prefix() + str(row['Export ID'])
+        export_id = str(row['Export ID'])
+
+        if export_id in config_data.excluded_uuids:
+            return
+
+        uuid = config_data.get_student_uuid_prefix() + export_id
 
         i = 1
         while util.section_id_header(i) in row:
