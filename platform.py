@@ -10,8 +10,7 @@ import util
 
 match sys.platform:
     case 'linux':
-        import dbus_fast
-        from dbus_fast import message_bus, Variant
+        from dbus_fast import Variant
 
         global bus
         global desktop_introspection
