@@ -107,7 +107,11 @@ class CourseInfoExtract(SeniorSysExtract):
         room = str(row['Room'])
 
         for semester in semesters:
-            course_code = util.course_code(section_id, config_data.get_course_code_prefix(), semester)
+            course_code = util.course_code(section_number,
+                                           section_id,
+                                           config_data.get_course_code_prefix(),
+                                           semester,
+                                           config_data.is_girls)
 
             csv_writer.writerow({
                 'Course Code': course_code,
@@ -142,9 +146,12 @@ class MembershipExtract(SeniorSysExtract):
         i = 1
         while util.section_id_header(i) in row:
             section_id = str(row[util.section_id_header(i)])
-            course_code = util.course_code(section_id,
+            section_number = str(row[util.section_number_header(i)])
+            course_code = util.course_code(section_number,
+                                           section_id,
                                            config_data.get_course_code_prefix(),
-                                           config_data.semester)
+                                           config_data.semester,
+                                           config_data.is_girls)
 
             faculty_id = str(row[util.faculty_id_primary_header(i)]) if self.is_teachers else 'N/A'
 
@@ -153,8 +160,6 @@ class MembershipExtract(SeniorSysExtract):
                     self.added_sections.append(course_code)
 
                 teacher_uuid = config_data.get_teacher_schoology_uuid(faculty_id)
-
-                section_number = str(row[util.section_number_header(i)])
 
                 csv_writer.writerow({
                     'Course Code': course_code,

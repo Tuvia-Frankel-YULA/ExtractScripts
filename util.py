@@ -23,8 +23,9 @@ def uri_to_path(uri: str) -> str:
         raise Exception('Unsupported uri type!\nFile:"' + uri + '"')
 
 
-def course_code(section_id: str, prefix: str, semester: int) -> str:
-    section_id_suffix = '-' + section_id.split('-')[-1]
+def course_code(section_number: str, section_id: str, prefix: str, semester: int, is_girls: bool) -> str:
+    # We need to do this ugly workaround because of the advisory classes in the girls school have a dash in the section code.
+    section_id_suffix = '-' + (section_number if is_girls else section_id.split('-')[-1])
     return prefix \
         + section_id.removesuffix(section_id_suffix) \
         + '-S' + str(semester)
