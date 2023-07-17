@@ -44,10 +44,11 @@ class Task:
                     grade = int(row['Grade'].strip())
                     year = config_data.year_map[grade]
 
+                    first_name = str(row['First Name']).strip()
                     last_name = str(row['Last Name']).strip()
-                    first_name = str(row['Student Name']).strip().removesuffix(last_name).strip()
-                    email = (first_name[0] + last_name + str(year) + config_data.email_suffix).lower()
-
+                    # first_name = str(row['Student Name']).strip().removesuffix(last_name).strip()
+                    email = str(row['Email'])
+                    # (first_name[0] + last_name + str(year) + config_data.email_suffix).lower()
 
                     if grade in config_data.grades:
                         csv_writer.writerow(self.process(row,
@@ -109,7 +110,8 @@ class GmailTask(Task):
             'Last Name [Required]': data.last_name,
             'Email Address [Required]': data.email,
             'Password [Required]': 'YULA' + str(data.year) + '!',
-            'Org Unit Path [Required]': '/YULA ' + ('Girls' if data.config_data.is_girls else 'Boys') + '/' + str(data.year),
+            'Org Unit Path [Required]': '/YULA ' + ('Girls' if data.config_data.is_girls else 'Boys') + '/' + str(
+                data.year),
             'Change Password at Next Sign-In': 'TRUE',
             'Advanced Protection Program enrollment': 'FALSE'
         }
@@ -222,7 +224,8 @@ class MosyleTask(Task):
         }
 
 
-def run_tasks(input_file: str, output_folder: str):
+def run_tasks(input_file: str, output_file: str):
+    output_folder = os.path.dirname(output_file)
     tasks = [GmailTask(), AdobeTask(), MicrosoftTask(), MosyleTask()]
 
     for task in tasks:

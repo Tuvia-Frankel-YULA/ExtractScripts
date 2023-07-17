@@ -396,6 +396,8 @@ def file_in_open_file_dialog():
                                                  in_default_folder)
         if os.path.exists(file_name):
             file_in_text.set(file_name)
+        else:
+            tkinter.messagebox.showerror('Failed to find file!', 'Failed to find file "' + file_name + '"!')
     except BaseException as e:
         tkinter.messagebox.showerror('Error!', str(e))
         raise e
