@@ -19,7 +19,7 @@ scripts: list[Tuple[str, Callable[[str, str], Any], str]] = [
     ('Senior Systems - Teacher Info', senior_sys.run_teacher_extract, 'teacher_extract'),
     ('Senior Systems - Student Info', senior_sys.run_student_extract, 'student_extract'),
     ('Senior Systems - Course Info', senior_sys.run_course_extract, 'course_extract'),
-    # ('Student accounts from student list.', student_names.run_tasks, 'student_names')
+    #('Student accounts from student list.', student_names.run_tasks, 'student_names')
 ]
 
 csv_filetypes = [('CSV file (*.csv)', '*.csv')]

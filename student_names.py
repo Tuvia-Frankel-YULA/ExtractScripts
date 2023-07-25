@@ -219,7 +219,7 @@ class MosyleTask(Task):
             '#Full Name': data.first_name + ' ' + data.last_name,
             'Person ID': data.email.removesuffix(data.config_data.email_suffix),
             'Email': data.email,
-            'Location': 'YULA Girls' if data.config_data.is_girls else 'YULA Boys',
+            'Location': 'Girls-YULA' if data.config_data.is_girls else 'YULA Boys',
             'Grade Level': str(data.year),
         }
 
