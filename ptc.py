@@ -222,39 +222,55 @@ class CourseInfoExtract(PtcExtract):
         super().__init__()
 
         self.teacher_class_map = {}
+        self.course_map = {}
         self.student_classes = []
         self.rows = ['Student ID Number', 'Course Title', 'Teacher ID Number']
 
     def process(self, row, config_data: configdata.Config, csv_writer: csv.DictWriter):
         status = row['Status']
 
-        if int(status) == 5:
+        if not status.strip() or int(status) == 5:
             return
 
         enrollment = row['Enrollment Type (1=Admin/2=Member)']
 
         uid = row['Unique User ID']
-        course = row['Course Code']
+        course_code = row['Course Code']
+        section = row['Section Name']
+
+        course = course_code + section
+
+        self.course_map[course] = course_code
 
         if int(enrollment) == 1:
-            if course in self.teacher_class_map and not self.teacher_class_map[course] == uid:
-                self.errors.append(PtcError("Course already has a teacher", course, "N/A", "N/A"))
-            else:
-                self.teacher_class_map[course] = uid
+            if uid:
+                if course in self.teacher_class_map and self.teacher_class_map[course] and self.teacher_class_map[course] != uid:
+                    self.errors.append(PtcError("Course already has a teacher with id " + self.teacher_class_map[
+                        course] + " but we are trying to set it to " + uid, course, "N/A", "N/A"))
+                else:
+                    self.teacher_class_map[course] = uid
         else:
-            self.student_classes.append((uid, course))
+            if 'Teacher ID' in row and row['Teacher ID'].strip():
+                self.student_classes.append((uid, course, row['Teacher ID']))
+            else:
+                self.student_classes.append((uid, course, ''))
 
     def post_process(self, csv_writer: csv.DictWriter):
-        for (uid, course) in self.student_classes:
-            if course not in self.teacher_class_map:
-                self.errors.append(PtcError("Class has no teacher!", course, "N/A", "N/A"))
+        missing_teachers = []
+
+        for (uid, course, teacher) in self.student_classes:
+            if not teacher and course not in self.teacher_class_map:
+                if course not in missing_teachers:
+                    self.errors.append(PtcError("Class has no teacher!", course, "N/A", "N/A"))
+                    missing_teachers.append(course)
                 continue
 
-            teacher = self.teacher_class_map[course]
+            teacher = self.teacher_class_map[course] if not teacher else teacher
+            course_code = self.course_map[course]
 
             csv_writer.writerow({
                 'Student ID Number': uid,
-                'Course Title': course,
+                'Course Title': course_code,
                 'Teacher ID Number': teacher,
             })
 
