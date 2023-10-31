@@ -26,17 +26,21 @@ def check_update() -> bool:
         version_str = version_file.read()
         version = int(version_str)
 
-        with urllib.request.urlopen(version_file_url) as request:
-            remote_version_str = request.read()
-            remote_version = int(remote_version_str)
+        try:
+            with urllib.request.urlopen(version_file_url) as request:
+                remote_version_str = request.read()
+                remote_version = int(remote_version_str)
 
-            time.sleep(1)
+                time.sleep(1)
 
-            window.update()
-            window.quit()
-            window.destroy()
+                window.update()
+                window.quit()
+                window.destroy()
 
-            return remote_version > version
+                return remote_version > version
+        except BaseException as e:
+            tkinter.messagebox.showerror('Error!', str(e))
+            return False
 
 
 def download_update():

@@ -9,6 +9,7 @@ import tkinter.messagebox
 import configdata
 import platform_util
 import senior_sys
+import ptc
 import student_names
 
 show_grade_select = False
@@ -19,6 +20,9 @@ scripts: list[Tuple[str, Callable[[str, str], Any], str]] = [
     ('Senior Systems - Teacher Info', senior_sys.run_teacher_extract, 'teacher_extract'),
     ('Senior Systems - Student Info', senior_sys.run_student_extract, 'student_extract'),
     ('Senior Systems - Course Info', senior_sys.run_course_extract, 'course_extract'),
+    ('PTC - Student Info', ptc.run_student_info_extract, 'ptc_student_info'),
+    ('PTC - Teacher Info', ptc.run_teacher_info_extract, 'ptc_teacher_info'),
+    ('PTC - Course Info', ptc.run_course_info_extract, 'ptc_course_info'),
     #('Student accounts from student list.', student_names.run_tasks, 'student_names')
 ]
 
@@ -88,22 +92,21 @@ def show_gui():
 
     semester_layout.columnconfigure(1, weight=1)
 
+    year_layout = tkinter.Frame(window)
+    year_layout.grid(sticky='WE')
+
+    year_label = tkinter.Label(year_layout, text="Year freshmen graduate: ")
+    year_label.grid(row=0, column=0)
+
+    global freshman_year
+    freshman_year = tkinter.StringVar()
+    freshman_year.set(str(config_data.year))
+    year_field = tkinter.Spinbox(year_layout, from_=0, to=10000, increment=1, textvariable=freshman_year, command=set_freshman_year)
+    year_field.grid(row=0, column=1, sticky='WE')
+
+    year_layout.columnconfigure(1, weight=1)
+
     if show_grade_select:
-        year_layout = tkinter.Frame(window)
-        year_layout.grid(sticky='WE')
-
-        year_label = tkinter.Label(year_layout, text="Year freshmen graduate: ")
-        year_label.grid(row=0, column=0)
-
-        global freshman_year
-        freshman_year = tkinter.StringVar()
-        freshman_year.set(str(config_data.year))
-        year_field = tkinter.Spinbox(year_layout, from_=0, to=10000, increment=1, textvariable=freshman_year,
-                                     command=set_freshman_year)
-        year_field.grid(row=0, column=1, sticky='WE')
-
-        year_layout.columnconfigure(1, weight=1)
-
         grades_layout = tkinter.Frame(window)
         grades_layout.grid(sticky="WE")
 

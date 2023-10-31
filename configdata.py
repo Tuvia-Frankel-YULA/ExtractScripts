@@ -21,7 +21,8 @@ class Config:
 
         self.excluded_uuids = [
             'WEBSV',
-            'TESTGIR'
+            'TESTGIR',
+            'TESTSTU',
         ]
 
         script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
